@@ -1,0 +1,29 @@
+// ----------------------------
+// --------  COLORS  ----------
+// ----------------------------
+
+$white: #fff;
+$light_gray: #bbb;
+$med_gray: #555;
+$dark_gray: #333;
+$black: #000;
+$light_blue: #9ed2f5;
+$blue: #59b8f8;
+$dark_blue: darken($blue, 15%);
+$green: #33C350;
+$checkered_bg: #e3e3e3;
+$checkered_bg_2: #f5f5f5;
+$error_red_bg: #ffbaba;
+$error_red_text: #d8000c;
+
+// ----------------------------
+// ----  SIZES + TIMES  -------
+// ----------------------------
+
+$header_height: 58px;
+$font_small: 13px;
+$font_default: 16px;
+$small_spacing: 5px;
+$med_spacing: 10px;
+$large_spacing: 15px;
+$timing_short: .5s;

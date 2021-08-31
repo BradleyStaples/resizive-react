@@ -1,15 +1,17 @@
 import * as React from 'react';
 import { Link } from 'gatsby';
-import Page from '../components/page';
+import Meta from '../components/meta';
+import Header from '../components/header';
 import Footer from '../components/footer';
+import '../styles/resizive.scss';
 
 const configSelector = (name, values) => {
   return (
-    <select classNamme='leftSpace integerOnly' name={name}>
+    <select className='leftSpace integerOnly' name={name}>
       {
         values.map(function (value, index) {
           return (
-            <option value={value.v}>{value.t}</option>
+            <option key={`${name}-${index}`} value={value.v}>{value.t}</option>
           );
         })
       }
@@ -19,7 +21,9 @@ const configSelector = (name, values) => {
 
 const ConfigPage = () => {
   return (
-    <Page title='Config | Resizive' pageType='config'>
+    <div>
+      <Meta title='Config | Resizive' path='config' />
+      <Header />
       <div className='page config'>
         <Link className='btn right' to='/'>&lArr; Home</Link>
         <h2 className='center'>Resizive Config</h2>
@@ -52,12 +56,12 @@ const ConfigPage = () => {
             Snap To Increment?
             <input className='leftSpace snap' type='checkbox' name='snap' />
           </label>
-          <input class='btn submit' type='submit' />
+          <input className='btn submit' type='submit' />
           <div className='success invisible'>Your config values have been saved.</div>
         </form>
         <Footer />
       </div>
-    </Page>
+    </div>
   )
 }
 

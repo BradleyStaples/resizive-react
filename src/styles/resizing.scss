@@ -1,0 +1,157 @@
+// ----------------------------
+// -----  RESIZING PAGE  ------
+// ----------------------------
+
+.buttonRow {
+  display: inline-block;
+}
+
+.showWidth,
+.showHeight {
+  width: ($med_spacing * 5);
+  height: ($med_spacing * 3);
+  padding: math.div($small_spacing, 3);
+  font-weight: bold;
+}
+
+.showWidth:focus,
+.showWidth:active,
+.showHeight:focus,
+.showHeight:active {
+  border: 2px solid lighten($light_gray, 10%);
+  background: $white;
+  color: $dark_gray;
+  border-radius: $small_spacing;
+}
+
+.loading {
+  display: block;
+  margin: 150px auto 0 auto;
+}
+
+.resizerContainer {
+  position: relative;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.resizer {
+  overflow: scroll;
+  width: 100%;
+  height: 100%;
+
+  &.noscroll {
+    overflow: hidden;
+  }
+}
+
+.resizing {
+
+  .dataEntry {
+    margin: 0;
+    text-align: left;
+  }
+
+  .frame {
+    width: 100%;
+    height: calc(100vh - 73px); // 58px from height of .header in header.scss, 15px from size of ruler-horizontal;
+    border: math.div($small_spacing, 3) solid $light_gray;
+    border-top: none;
+  }
+
+  .transitionable {
+    transition: width .5s, height .5s;
+  }
+}
+
+.rulers.showRulers {
+  position: relative;
+  min-height: calc(100vh - 73px); // 58px from height of .header in header.scss, 15px from size of ruler-horizontal
+  padding: 15px 0 0 15px;
+  background-image: url(/images/vertical_ruler.png), url(/images/horizontal_ruler.png);
+  background-position: 0 15px, 15px 0;
+  background-repeat: no-repeat;
+
+
+  .rulerHorizontal,
+  .rulerVertical {
+    position: absolute;
+    z-index: 2;
+  }
+
+  .rulerHorizontal {
+    top: 0;
+    left: 15px;
+    width: 100%;
+    height: 15px;
+    cursor: col-resize;
+  }
+
+  .rulerVertical {
+    top: 15px;
+    left: 0;
+    width: 15px;
+    height: calc(100vh - 73px); // 58px from height of .header in header.scss, 15px from size of ruler-horizontal
+    cursor: row-resize;
+  }
+}
+
+.stacked {
+  display: inline-block;
+  width: 38px;
+  vertical-align: middle;
+}
+
+.number-entry {
+  display: inline-block;
+  width: 125px;
+  vertical-align: middle;
+}
+
+.btnRefresh .text {
+  transform: rotate(90deg);
+}
+
+.btnPhones {
+  width: 77px; // set width so when text switches to 'hide' from 'phones', layout doesn't shift
+}
+
+.btnTablets {
+  width: 73px; // set width so when text switches to 'hide' from 'tablets', layout doesn't shift
+}
+
+.deviceList {
+  position: relative;
+  top: -5px;
+  left: 515px;
+  z-index: 10;
+  width: 310px;
+  margin: 0;
+  padding: $large_spacing;
+  border: 1px solid $light_blue;
+  border-radius: $small_spacing;
+  list-style: none;
+  background-color: $white;
+  box-shadow: 1px 1px 2px $dark_blue;
+  font-size: $font_small;
+
+  .device {
+    cursor: pointer;
+    padding: 3px;
+  }
+
+  .device + .device {
+    border-top: 1px solid $light_gray;
+  }
+
+  .name {
+    color: $blue;
+    pointer-events: none;
+  }
+
+  .size {
+    font-family: monospace;
+    color: $med_gray;
+    pointer-events: none;
+  }
+}

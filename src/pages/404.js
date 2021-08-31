@@ -1,14 +1,21 @@
 import * as React from 'react';
-import Page from '../components/page';
+import Meta from '../components/meta';
+import Header from '../components/header';
+import Footer from '../components/footer';
+import '../styles/resizive.scss';
 
 
 const NotFoundPage = () => {
   return (
-    <Page title='Not Found | Resizive' pageTyle='404'>
-      <div className='content-404'>
-        <img src='/images/404.jpg' alt='This is not the page you are looking for' title='This is not the page you are looking for' />
+    <div>
+      <Meta title='Not Found | Resizive' path='404' />
+      <Header />
+      <div className='page'>
+        <h1 className='center errorShrug'>¯\_(ツ)_/¯</h1>
+        <p className='center'>The page you are looking for could not be found.</p>
+        <Footer />
       </div>
-    </Page>
+    </div >
   )
 }
 

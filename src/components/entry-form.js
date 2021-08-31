@@ -24,6 +24,13 @@ const EntryForm = ({ pageType }) => {
     setInputHasBeenTouched(true);
     let suspect = event.target.value;
     let validity = !!validUrl.isWebUri(suspect); // isWebUri returns undefined or the valid URL string
+    if (!validity && suspect === '') {
+      // user has deleted entire URL from URL field; hide error box but keep button disabled
+      setUrlValid(true);
+      setInputHasBeenTouched(false);
+      return;
+    }
+    // else user has something typed in the URL field, show error or not as appropriate
     setUrlValid(validity);
   };
 

@@ -1,0 +1,41 @@
+// ----------------------------
+// ----  COMMON CLASSES  ------
+// ----------------------------
+
+.hidden {
+  display: none !important;
+}
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
+
+.clearFix:before {
+  content: ' ';
+  display: table;
+}
+
+.clearFix:after {
+  clear: both;
+}
+
+.center {
+  text-align: center;
+}
+
+.fontSmall {
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.fontLarge {
+  font-size: 1.75rem;
+}
+
+.leftSpace {
+  margin-left: $small_spacing;
+}

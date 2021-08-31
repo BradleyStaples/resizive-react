@@ -1,10 +1,17 @@
 import * as React from 'react';
-import Page from '../components/page';
+import Meta from '../components/meta';
+import Header from '../components/header';
+import EntryForm from '../components/entry-form';
 import Footer from '../components/footer';
+import '../styles/resizive.scss';
 
 const IndexPage = () => {
   return (
-    <Page title='About | Resizive' pageType='index'>
+    <div>
+      <Meta title='About | Resizive' path='' />
+      <Header>
+        <EntryForm />
+      </Header>
       <div className='page'>
         <h2 className='center'>About Resizive</h2>
         <p>
@@ -36,7 +43,7 @@ const IndexPage = () => {
         </p>
         <Footer />
       </div>
-    </Page>
+    </div>
   )
 }
 
