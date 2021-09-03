@@ -1,63 +1,157 @@
-import * as React from 'react';
-import { Link } from 'gatsby';
+import React, { useState, useEffect } from 'react';
+
 import Meta from '../components/meta';
 import Header from '../components/header';
+import EntryForm from '../components/entry-form';
 import Footer from '../components/footer';
+
+import fetchLocalStorageValues from '../components/get-config-values';
 import '../styles/resizive.scss';
 
-const configSelector = (name, values) => {
-  return (
-    <select className='leftSpace integerOnly' name={name}>
-      {
-        values.map(function (value, index) {
-          return (
-            <option key={`${name}-${index}`} value={value.v}>{value.t}</option>
-          );
-        })
-      }
-    </select>
-  );
-};
-
 const ConfigPage = () => {
+  const initialValues = fetchLocalStorageValues();
+  const [animationIncrement, setAnimationIncrement] = useState(initialValues['animationIncrement']);
+  const [animationDuration, setAnimationDuration] = useState(initialValues['animationDuration']);
+  const [stepIncrement, setStepIncrement] = useState(initialValues['stepIncrement']);
+  const [stepDuration, setStepDuration] = useState(initialValues['stepDuration']);
+  const [useScrollbars, setUseScrollbars] = useState(initialValues['useScrollbars']);
+  const [useRulers, setUseRulers] = useState(initialValues['useRulers']);
+  const [useSnap, setUseSnap] = useState(initialValues['useSnap']);
+
+  useEffect(() => {
+    localStorage.setItem('animationDuration', animationDuration);
+  }, [animationDuration]);
+
+  useEffect(() => {
+    localStorage.setItem('animationIncrement', animationIncrement);
+  }, [animationIncrement]);
+
+  useEffect(() => {
+    localStorage.setItem('stepIncrement', stepIncrement);
+  }, [stepIncrement]);
+
+  useEffect(() => {
+    localStorage.setItem('stepDuration', stepDuration);
+  }, [stepDuration]);
+
+  useEffect(() => {
+    localStorage.setItem('useScrollbars', useScrollbars);
+  }, [useScrollbars]);
+
+  useEffect(() => {
+    localStorage.setItem('useRulers', useRulers);
+  }, [useRulers]);
+
+  useEffect(() => {
+    localStorage.setItem('useSnap', useSnap);
+  }, [useSnap]);
+
+  const configSelector = (name, selectedValue, stateFunc, values) => {
+    return (
+      <select
+        className='leftSpace config-selector'
+        name={name}
+        value={selectedValue}
+        onChange={(event) => {
+          let newValue = event.target.value;
+          stateFunc(newValue);
+        }}
+      >
+        {
+          values.map(function (value, index) {
+            return (
+              <option key={`${name}-${index}`} value={value.v}>{value.t}</option>
+            );
+          })
+        }
+      </select>
+    );
+  };
+
   return (
     <div>
       <Meta title='Config | Resizive' path='config' />
-      <Header />
+      <Header>
+        <EntryForm hideConfig={true} />
+      </Header>
       <div className='page config'>
-        <Link className='btn right' to='/'>&lArr; Home</Link>
         <h2 className='center'>Resizive Config</h2>
-        <form className='configForm' method='post' action='#'>
+        <form method='post' action='#'>
           <label>
-            Increment Size For Animation
-            {configSelector('animation_increment', [{ v: 20, t: 'Smaller (20px)' }, { v: 35, t: 'Normal (35px)' }, { v: 50, t: 'Larger (50px)' }])}
+            <span>Increment Size For Animation</span>
+            {configSelector(
+              'animationIncrement',
+              animationIncrement,
+              setAnimationIncrement,
+              [{ v: 20, t: 'Smaller (20px)' }, { v: 35, t: 'Normal (35px)' }, { v: 50, t: 'Larger (50px)' }]
+            )}
           </label>
           <label>
-            Transition Duration For Animation
-            {configSelector('animation_duration', [{ v: 50, t: 'Smaller (50ms)' }, { v: 75, t: 'Normal (75ms)' }, { v: 100, t: 'Larger (100ms)' }])}
+            <span>Transition Duration For Animation</span>
+            {configSelector(
+              'animationDuration',
+              animationDuration,
+              setAnimationDuration,
+              [{ v: 100, t: 'Smaller (100ms)' }, { v: 200, t: 'Normal (200ms)' }, { v: 300, t: 'Larger (300ms)' }]
+            )}
           </label>
           <label>
-            Increment Size For Button Press
-            {configSelector('step_increment', [{ v: 5, t: 'Smaller (5px)' }, { v: 10, t: 'Normal (10px)' }, { v: 20, t: 'Larger (20px)' }])}
+            <span>Increment Size For Button Press</span>
+            {configSelector(
+              'stepIncrement',
+              stepIncrement,
+              setStepIncrement,
+              [{ v: 5, t: 'Smaller (5px)' }, { v: 10, t: 'Normal (10px)' }, { v: 20, t: 'Larger (20px)' }]
+            )}
           </label>
           <label>
-            Transition Duration For Button Press
-            {configSelector('step_duration', [{ v: 50, t: 'Smaller (50ms)' }, { v: 100, t: 'Normal (100ms)' }, { v: 200, t: 'Larger (200ms)' }])}
+            <span>Transition Duration For Button Press</span>
+            {configSelector(
+              'stepDuration',
+              stepDuration,
+              setStepDuration,
+              [{ v: 50, t: 'Smaller (50ms)' }, { v: 100, t: 'Normal (100ms)' }, { v: 200, t: 'Larger (200ms)' }]
+            )}
           </label>
           <label>
-            Show Scrollbars?
-            <input className='leftSpace scrollbars' type='checkbox' name='scrollbars' />
+            <span>Show Scrollbars?</span>
+            <input
+              className='leftSpace'
+              type='checkbox'
+              name='useScrollbars'
+              value='userScrollbars'
+              checked={useScrollbars}
+              onChange={(event) => {
+                setUseScrollbars(!useScrollbars);
+              }}
+            />
           </label>
           <label>
-            Show Rulers?
-            <input className='leftSpace rulers' type='checkbox' name='rulers' />
+            <span>Show Rulers?</span>
+            <input
+              className='leftSpace'
+              type='checkbox'
+              name='useRulers'
+              value='useRulers'
+              checked={useRulers}
+              onChange={(event) => {
+                setUseRulers(!useRulers);
+              }}
+            />
           </label>
           <label>
-            Snap To Increment?
-            <input className='leftSpace snap' type='checkbox' name='snap' />
+            <span>Snap To Increment?</span>
+            <input
+              className='leftSpace'
+              type='checkbox'
+              name='useSnap'
+              value='useSnap'
+              checked={useSnap}
+              onChange={(event) => {
+                setUseSnap(!useSnap);
+              }}
+            />
           </label>
-          <input className='btn submit' type='submit' />
-          <div className='success invisible'>Your config values have been saved.</div>
         </form>
         <Footer />
       </div>

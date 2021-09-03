@@ -3,7 +3,7 @@ import { Link } from 'gatsby';
 import classnames from 'classnames';
 import validUrl from 'valid-url';
 
-const EntryForm = ({ pageType }) => {
+const EntryForm = ({ hideConfig }) => {
   const [urlValid, setUrlValid] = useState(true);
   const [inputHasBeenTouched, setInputHasBeenTouched] = useState(false);
 
@@ -37,8 +37,10 @@ const EntryForm = ({ pageType }) => {
   return (
     <form method='get' action='/resizing' onSubmit={entryFormSubmit}>
       <input className={inputClasses} type='url' name='url' placeholder='Enter Website URL' onChange={urlChange} />
-      <button className='btn btnLoad leftSpace' type='submit' disabled={!urlValid || !inputHasBeenTouched}>Go</button>
-      <Link className='btn fontLarge leftSpace' to='/config' title='Set Config Data'>&#9881;</Link>
+      <button className='btn leftSpace' type='submit' disabled={!urlValid || !inputHasBeenTouched}>Resize!</button>
+      { !hideConfig &&
+        <Link className='btn fontLarge leftSpace' to='/config' title='Set Config Data'>&#9881;</Link>
+      }
       <div className='errorText fontSmall'>
         {!urlValid && inputHasBeenTouched &&
           <span>Please enter a valid URL (with http:// or https://)</span>

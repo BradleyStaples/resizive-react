@@ -10,7 +10,7 @@ import '../styles/resizive.scss';
 
 const ResizingPage = () => {
   const iframeRef = useRef();
-  let resizableInstance;
+  const resizableRef = useRef();
 
   const [iframeLoaded, setIframeLoaded] = useState(false);
 
@@ -26,16 +26,11 @@ const ResizingPage = () => {
       setHeight(newHeight);
     }
     if (resizeIframe) {
-      resizableInstance.updateSize({
+      resizableRef.current.updateSize({
         width: newWidth || width, // `width` is from state in case newWidth not passed in
         height: newHeight || height // `height` is from state in case newHeight not passed in
       });
     }
-  };
-
-  const refreshIframe = () => {
-    // hacky way to force react to reload iframe with same URL
-    setIframeKey(iframeKey + 1);
   };
 
   useEffect(() => {
@@ -43,15 +38,19 @@ const ResizingPage = () => {
       newWidth: iframeRef.current.offsetWidth,
       newHeight: iframeRef.current.offsetHeight
     }, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [iframeLoaded]);
+
+  const reloadIframe = () => {
+    // hacky way to force react to reload iframe with same URL
+    setIframeKey(iframeKey + 1);
+  };
 
   const onIframeLoad = (event) => {
     setIframeLoaded(true);
   };
 
   const onResizeStop = (event, direction, refToElement, delta) => {
-    // console.log('resize', event, direction, refToElement, delta);
-    // console.log('updateSize', resizableInstance.updateSize);
     updateDimensions({
       newWidth: iframeRef.current.offsetWidth,
       newHeight: iframeRef.current.offsetHeight
@@ -85,16 +84,16 @@ const ResizingPage = () => {
           width={width}
           height={height}
           updateDimensions={updateDimensions}
-          refreshIframe={refreshIframe}
+          reloadIframe={reloadIframe}
         />
       </Header>
       <div className='rulers showRulers'>
         <div className='rulersHorizontal'></div>
         <div className='rulerVertical'></div>
-        <div className='resizerContainer transitionable'>
+        <div className='resizerContainer'>
           <img className={loadingClasses} src='/images/throbber.svg' width='48' height='48' alt='Loading' />
           <Resizable
-            ref={c => { resizableInstance = c; }}
+            ref={resizableRef}
             className='frame'
             bounds='window'
             defaultSize={{

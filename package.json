@@ -26,6 +26,7 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-helmet": "^6.1.0",
+    "react-hotkeys-hook": "^3.4.0",
     "sass": "^1.38.0",
     "valid-url": "^1.0.9"
   }

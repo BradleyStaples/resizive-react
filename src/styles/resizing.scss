@@ -58,10 +58,6 @@
     border: math.div($small_spacing, 3) solid $light_gray;
     border-top: none;
   }
-
-  .transitionable {
-    transition: width .5s, height .5s;
-  }
 }
 
 .rulers.showRulers {
@@ -102,14 +98,10 @@
   vertical-align: middle;
 }
 
-.number-entry {
+.numberEntry {
   display: inline-block;
   width: 125px;
   vertical-align: middle;
-}
-
-.btnRefresh .text {
-  transform: rotate(90deg);
 }
 
 .btnPhones {
@@ -134,9 +126,10 @@
   background-color: $white;
   box-shadow: 1px 1px 2px $dark_blue;
   font-size: $font_small;
+  max-height: 500px;
+  overflow-y: scroll;
 
   .device {
-    cursor: pointer;
     padding: 3px;
   }
 

@@ -1,0 +1,17 @@
+// ----------------------------
+// ------  config page  -------
+// ----------------------------
+
+.page.config {
+  width: 500px;
+
+  label > span {
+    display: inline-block;
+    width: 260px;
+    text-align: right;
+  }
+
+  .config-selector {
+    width: 175px;
+  }
+}
