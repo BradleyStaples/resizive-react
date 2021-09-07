@@ -43,9 +43,6 @@ const IndexPage = () => {
           Keyboard controls recognized:
         </p>
         <ul className='controls'>
-          <li><code>S</code>: Start Resizing</li>
-          <li><code>P</code>: Pause Resizing</li>
-          <li><code>R</code>: Resume Resizing</li>
           <li><code>&larr;</code>: Decrement <code>{initialValues.current['stepIncrement']}px</code> horizontally</li>
           <li><code>&rarr;</code>: Increment <code>{initialValues.current['stepIncrement']}px</code> horizontally</li>
           <li><code>&uarr;</code>: Decrement <code>{initialValues.current['stepIncrement']}px</code> vertically</li>

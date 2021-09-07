@@ -13,10 +13,8 @@ const ConfigPage = () => {
   const [animationIncrement, setAnimationIncrement] = useState(initialValues['animationIncrement']);
   const [animationDuration, setAnimationDuration] = useState(initialValues['animationDuration']);
   const [stepIncrement, setStepIncrement] = useState(initialValues['stepIncrement']);
-  const [stepDuration, setStepDuration] = useState(initialValues['stepDuration']);
   const [useScrollbars, setUseScrollbars] = useState(initialValues['useScrollbars']);
   const [useRulers, setUseRulers] = useState(initialValues['useRulers']);
-  const [useSnap, setUseSnap] = useState(initialValues['useSnap']);
 
   useEffect(() => {
     localStorage.setItem('animationDuration', animationDuration);
@@ -31,10 +29,6 @@ const ConfigPage = () => {
   }, [stepIncrement]);
 
   useEffect(() => {
-    localStorage.setItem('stepDuration', stepDuration);
-  }, [stepDuration]);
-
-  useEffect(() => {
     localStorage.setItem('useScrollbars', useScrollbars);
   }, [useScrollbars]);
 
@@ -42,9 +36,6 @@ const ConfigPage = () => {
     localStorage.setItem('useRulers', useRulers);
   }, [useRulers]);
 
-  useEffect(() => {
-    localStorage.setItem('useSnap', useSnap);
-  }, [useSnap]);
 
   const configSelector = (name, selectedValue, stateFunc, values) => {
     return (
@@ -105,15 +96,6 @@ const ConfigPage = () => {
             )}
           </label>
           <label>
-            <span>Transition Duration For Button Press</span>
-            {configSelector(
-              'stepDuration',
-              stepDuration,
-              setStepDuration,
-              [{ v: 50, t: 'Smaller (50ms)' }, { v: 100, t: 'Normal (100ms)' }, { v: 200, t: 'Larger (200ms)' }]
-            )}
-          </label>
-          <label>
             <span>Show Scrollbars?</span>
             <input
               className='leftSpace'
@@ -136,19 +118,6 @@ const ConfigPage = () => {
               checked={useRulers}
               onChange={(event) => {
                 setUseRulers(!useRulers);
-              }}
-            />
-          </label>
-          <label>
-            <span>Snap To Increment?</span>
-            <input
-              className='leftSpace'
-              type='checkbox'
-              name='useSnap'
-              value='useSnap'
-              checked={useSnap}
-              onChange={(event) => {
-                setUseSnap(!useSnap);
               }}
             />
           </label>

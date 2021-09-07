@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useReducer } from 'react';
 import classnames from 'classnames';
 import { Resizable } from 're-resizable';
 // import debounce from 'lodash.debounce';
@@ -6,37 +6,79 @@ import { Resizable } from 're-resizable';
 import Meta from '../components/meta';
 import Header from '../components/header';
 import ControlPanel from '../components/control-panel';
+import fetchLocalStorageValues from '../components/get-config-values';
+import useWindowSize from '../components/use-window-size';
+import useInterval from '../components/use-interval';
 import '../styles/resizive.scss';
 
 const ResizingPage = () => {
   const iframeRef = useRef();
   const resizableRef = useRef();
 
+  const animationDirectionRef = useRef();
+  animationDirectionRef.current = 1;
+
+  const initialValues = useRef();
+  initialValues.current = fetchLocalStorageValues();
+
+  const [iframeKey, setIframeKey] = useState(0);
   const [iframeLoaded, setIframeLoaded] = useState(false);
 
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
-  const [iframeKey, setIframeKey] = useState(0);
+  let [windowWidth] = useWindowSize();
 
-  const updateDimensions = ({ newWidth, newHeight}, resizeIframe) => {
-    if (newWidth) {
-      setWidth(newWidth);
+  function iframeReducer(state, action) {
+    switch (action.type) {
+      case 'update':
+        return Object.assign({}, state, {
+          width: state.width + action.widthDelta,
+          height: state.height + action.heightDelta,
+          resize: action.resize
+        });
+      case 'stop':
+        return Object.assign({}, state, { resize: false });
+      default:
+        throw new Error();
     }
-    if (newHeight) {
-      setHeight(newHeight);
-    }
-    if (resizeIframe) {
-      resizableRef.current.updateSize({
-        width: newWidth || width, // `width` is from state in case newWidth not passed in
-        height: newHeight || height // `height` is from state in case newHeight not passed in
-      });
-    }
+  };
+  const [iframeState, iframeDispatch] = useReducer(iframeReducer, {
+    width: 0,
+    height: 0,
+    resize: false
+  });
+
+  const updateDimensions = ({ widthDelta, heightDelta }, resize) => {
+    // allow for only one delta to be passed in
+    widthDelta = widthDelta || 0;
+    heightDelta = heightDelta || 0;
+
+    iframeDispatch({
+      type: 'update',
+      widthDelta,
+      heightDelta,
+      resize
+    });
   };
 
   useEffect(() => {
+    // abuse of a ref to make sure local storage values are gathered on each page render
+    initialValues.current = fetchLocalStorageValues();
+  });
+
+  useEffect(() => {
+    if (iframeState.resize) {
+      console.log('resizing iframe to:', iframeState.width, iframeState.height);
+      resizableRef.current.updateSize({
+        width: iframeState.width,
+        height: iframeState.height
+      });
+      iframeDispatch({type: 'stop'});
+    }
+  }, [iframeState.width, iframeState.height, iframeState.resize]);
+
+  useEffect(() => {
     updateDimensions({
-      newWidth: iframeRef.current.offsetWidth,
-      newHeight: iframeRef.current.offsetHeight
+      widthDelta: iframeRef.current.offsetWidth,
+      heightDelta: iframeRef.current.offsetHeight
     }, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [iframeLoaded]);
@@ -50,10 +92,65 @@ const ResizingPage = () => {
     setIframeLoaded(true);
   };
 
+  const animiateIframe = () => {
+    let floor = 320;
+    let delta = initialValues.current.animationIncrement;
+    let duration = initialValues.current.animationDuration;
+
+    let timerId = setInterval(() => {
+      let newWidth = iframeState.width + (delta * animationDirectionRef.current);
+      let widthDelta;
+
+      if (newWidth >= windowWidth && animationDirectionRef.current === 1) {
+        // change direction to be decremental
+        animationDirectionRef.current = -1;
+        widthDelta = delta * -1;
+      } else if (newWidth <= floor && animationDirectionRef.current === -1) {
+        // change direction to be incremental
+        animationDirectionRef.current = 1;
+        widthDelta = delta;
+      } else {
+        // maintain existing direction
+        widthDelta = delta * animationDirectionRef.current;
+      }
+
+      console.log('width', iframeState.width, 'widthDelta', widthDelta);
+      updateDimensions({
+        widthDelta
+      }, true);
+    }, duration);
+
+
+    // let timerId = useInterval(() => {
+    //   let newWidth = iframeState.width + (delta * animationDirectionRef.current);
+    //   let widthDelta;
+
+    //   if (newWidth >= windowWidth && animationDirectionRef.current === 1) {
+    //     // change direction to be decremental
+    //     animationDirectionRef.current = -1;
+    //     widthDelta = delta * -1;
+    //   } else if (newWidth <= floor && animationDirectionRef.current === -1) {
+    //     // change direction to be incremental
+    //     animationDirectionRef.current = 1;
+    //     widthDelta = delta;
+    //   } else {
+    //     // maintain existing direction
+    //     widthDelta = delta * animationDirectionRef.current;
+    //   }
+
+    //   console.log('width', iframeState.width, 'widthDelta', widthDelta);
+    //   updateDimensions({
+    //     widthDelta
+    //   }, true);
+    // }, duration);
+
+    return timerId;
+  };
+
   const onResizeStop = (event, direction, refToElement, delta) => {
     updateDimensions({
-      newWidth: iframeRef.current.offsetWidth,
-      newHeight: iframeRef.current.offsetHeight
+      widthDelta: delta.width,
+      heightDelta: delta.height
     }, false);
   };
 
@@ -71,23 +168,39 @@ const ResizingPage = () => {
     resizing: iframeLoaded
   });
 
+  const rulerClasses = classnames({
+    rulers: true,
+    showRulers: initialValues.current.useRulers
+  });
+
   const search = window.location.search;
   const params = new URLSearchParams(search);
   const url = params.get('url');
   const title = url ? `Resizive: ${url}` : 'Resizive';
+
+  let transitionDuration = initialValues.current.animationDuration / 1000; // animationDuration is an integer of milliseconds
+  let resizableStyles = {
+    transition: `height ${transitionDuration}s, width ${transitionDuration}s`
+  };
+
+  let scrolling = 'no';
+  if (initialValues.current.useScrollbars) {
+    scrolling = 'yes';
+  }
 
   return (
     <div className={wrapperClass}>
       <Meta title={title} path='resizing' />
       <Header>
         <ControlPanel
-          width={width}
-          height={height}
+          width={iframeState.width}
+          height={iframeState.height}
           updateDimensions={updateDimensions}
           reloadIframe={reloadIframe}
+          animiateIframe={animiateIframe}
         />
       </Header>
-      <div className='rulers showRulers'>
+      <div className={rulerClasses}>
         <div className='rulersHorizontal'></div>
         <div className='rulerVertical'></div>
         <div className='resizerContainer'>
@@ -95,6 +208,7 @@ const ResizingPage = () => {
           <Resizable
             ref={resizableRef}
             className='frame'
+            style={resizableStyles}
             bounds='window'
             defaultSize={{
               height: '75vh',
@@ -120,6 +234,7 @@ const ResizingPage = () => {
               src={url}
               height='100%'
               frameBorder='0'
+              scrolling={scrolling}
               onLoad={onIframeLoad}
             />
           </Resizable>

@@ -3,12 +3,10 @@ import classnames from 'classnames';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { Link } from 'gatsby';
 
-import useWindowSize from '../components/use-window-size';
-import useInterval from '../components/use-interval';
 import fetchLocalStorageValues from '../components/get-config-values';
 import { phoneList, tabletList } from './device-sizes';
 
-const ControlPanel = ({ width, height, updateDimensions, reloadIframe }) => {
+const ControlPanel = ({ width, height, updateDimensions, reloadIframe, animiateIframe }) => {
 
   const initialValues = useRef();
   initialValues.current = fetchLocalStorageValues();
@@ -18,9 +16,7 @@ const ControlPanel = ({ width, height, updateDimensions, reloadIframe }) => {
     initialValues.current = fetchLocalStorageValues();
   });
 
-  const animationDirectionRef = useRef();
-  animationDirectionRef.current = 1;
-  let [windowWidth] = useWindowSize();
+  const animationTimerRef = useRef();
 
   const [widthError, setWidthError] = useState(false);
   const [heightError, setHeightError] = useState(false);
@@ -29,31 +25,10 @@ const ControlPanel = ({ width, height, updateDimensions, reloadIframe }) => {
   const [animation, setAnimation] = useState(false);
 
   useEffect(() => {
-    let floor = 320;
-    let delta = initialValues.current.animationIncrement;
-    let duration = initialValues.current.animationDuration;
-
-    useInterval(() => {
-      let newWidth = width + (delta * animationDirectionRef.current);
-
-      if (newWidth >= windowWidth && animationDirectionRef.current === 1) {
-        animationDirectionRef.current = -1;
-        newWidth = width + (delta * animationDirectionRef.current)
-      }
-
-      if (newWidth <= floor && animationDirectionRef.current === -1) {
-        animationDirectionRef.current = 1;
-        newWidth = width + (delta * animationDirectionRef.current)
-      }
-
-      console.log('animationDirectionRef.current', animationDirectionRef.current, 'width', width, 'newWidth', newWidth, 'delta', delta, 'duration', duration);
-      updateDimensions({
-        newWidth,
-        height
-      }, true);
-
-    }, animation ? duration : null);
-  }, [animation, height, width, updateDimensions, windowWidth]);
+    if (animation && !animationTimerRef.current) {
+      animationTimerRef.current = animiateIframe();
+    }
+  }, [animation, animiateIframe]);
 
   const onStart = (event) => {
     setAnimation(true);
@@ -61,33 +36,36 @@ const ControlPanel = ({ width, height, updateDimensions, reloadIframe }) => {
 
   const onStop = (event) => {
     setAnimation(false);
+    // abuse of a ref to store timer
+    clearInterval(animationTimerRef.current);
+    animationTimerRef.current = null;
   };
 
   const decrementWidth = (event) => {
-    let newWidth = width - initialValues.current['stepIncrement'];
+    let widthDelta = initialValues.current['stepIncrement'] * -1;
     updateDimensions({
-      newWidth,
+      widthDelta
     }, true);
   };
 
   const incrementWidth = (event) => {
-    let newWidth = width + initialValues.current['stepIncrement'];
+    let widthDelta = initialValues.current['stepIncrement'];
     updateDimensions({
-      newWidth,
+      widthDelta
     }, true);
   };
 
   const decrementHeight = (event) => {
-    let newHeight = height - initialValues.current['stepIncrement'];
+    let heightDelta = initialValues.current['stepIncrement'] * -1;
     updateDimensions({
-      newHeight,
+      heightDelta
     }, true);
   };
 
   const incrementHeight = (event) => {
-    let newHeight = height + initialValues.current['stepIncrement'];
+    let heightDelta = initialValues.current['stepIncrement'];
     updateDimensions({
-      newHeight,
+      heightDelta
     }, true);
   };
 
@@ -97,8 +75,9 @@ const ControlPanel = ({ width, height, updateDimensions, reloadIframe }) => {
     // eslint-disable-next-line eqeqeq
     setWidthError(value != newWidth); // loose comparison because string to nummber
     if (!widthError) {
+      let widthDelta = newWidth - width;
       updateDimensions({
-        newWidth,
+        widthDelta
       }, true);
     }
   };
@@ -109,19 +88,20 @@ const ControlPanel = ({ width, height, updateDimensions, reloadIframe }) => {
     // eslint-disable-next-line eqeqeq
     setHeightError(value != newHeight); // loose comparison because string to nummber
     if (!heightError) {
+      let heightDelta = newHeight - height;
       updateDimensions({
-        newHeight,
+        heightDelta
       }, true);
     }
   };
 
   const onRotateClick = (event) => {
-    let newWidth = height;
-    let newHeight = width;
+    let widthDelta = height - width;
+    let heightDelta = width - height;
 
     updateDimensions({
-      newWidth,
-      newHeight,
+      widthDelta,
+      heightDelta
     }, true);
   };
 
@@ -139,8 +119,7 @@ const ControlPanel = ({ width, height, updateDimensions, reloadIframe }) => {
     setShowTabletList(!shoneTabletList);
   };
 
-
-  // useHotkeys('up', () => decrementHeight());
+  // keybinds
   useHotkeys('up', () => decrementHeight(), {}, [height, width]);
   useHotkeys('down', () => incrementHeight(), {}, [height, width]);
   useHotkeys('left', () => decrementWidth(), {}, [height, width]);
@@ -154,10 +133,10 @@ const ControlPanel = ({ width, height, updateDimensions, reloadIframe }) => {
         className='device clearFix'
         key={`${deviceType}-${index}`}
       >
-        <button className='btn-invisible' onClick={(event) => {
+        <button className='btnInvisible' onClick={(event) => {
           updateDimensions({
-            newWidth: device.width,
-            newHeight: device.height,
+            widthDelta: device.width - width,
+            heightDelta: device.height - height
           }, true);
           setShowPhoneList(false);
           setShowTabletList(false);
@@ -197,15 +176,8 @@ const ControlPanel = ({ width, height, updateDimensions, reloadIframe }) => {
   return (
     <div>
       <div className='buttonRow leftSpace'>
-        <button className='btn' onClick={onStart}>
-          <span>S</span>tart
-        </button>
-        <button className='btn leftSpace hidden'>
-          <span>R</span>esume
-        </button>
-        <button className='btn leftSpace' onClick={onStop}>
-          <span>P</span>ause
-        </button>
+        <button className='btn' onClick={onStart} disabled={animation}>Start</button>
+        <button className='btn leftSpace' onClick={onStop} disabled={!animation}>Pause</button>
         <button className='btn leftSpace' onClick={decrementWidth}>
           <span>&larr;</span>
         </button>

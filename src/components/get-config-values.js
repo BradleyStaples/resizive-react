@@ -1,11 +1,9 @@
 const localStorageDefaultValues = {
   'animationIncrement': 35,
-  'animationDuration': 100,
+  'animationDuration': 200,
   'stepIncrement': 10,
-  'stepDuration': 100,
   'useScrollbars': true,
-  'useRulers': true,
-  'useSnap': false
+  'useRulers': true
 };
 
 const fetchLocalStorageValues = () => {
@@ -25,8 +23,11 @@ const fetchLocalStorageValues = () => {
         localValue = parseInt(localValue, 10);
       }
     }
-
-    initialValues[key] = localValue || defaultValue;
+    if (localValue === false) {
+      initialValues[key] = localValue;
+    } else {
+      initialValues[key] = localValue || defaultValue;
+    }
   });
 
   return initialValues;
