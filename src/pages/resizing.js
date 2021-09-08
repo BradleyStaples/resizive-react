@@ -168,10 +168,19 @@ const ResizingPage = () => {
     showRulers: initialValues.current.useRulers
   });
 
-  const search = window.location.search;
-  const params = new URLSearchParams(search);
-  const url = params.get('url');
-  const title = url ? `Resizive: ${url}` : 'Resizive';
+  const windowGlobal = typeof window !== 'undefined' && window;
+  let title;
+  let url;
+  try {
+    const search = windowGlobal.location.search;
+    const params = new URLSearchParams(search);
+    url = params.get('url');
+    title = url ? `Resizive: ${url}` : 'Resizive';
+  } catch (e) {
+    title = 'Resizive';
+    url = '';
+    console.log('Error getting url from query param');
+  }
 
   let transitionDuration = initialValues.current.animationDuration / 1000; // animationDuration is an integer of milliseconds
   let resizableStyles = {
