@@ -1,3 +1,4 @@
+// from https://stackoverflow.com/questions/19014250/rerender-view-on-browser-resize-with-react/19014495#19014495
 import { useLayoutEffect, useState } from 'react';
 
 const useWindowSize =() => {

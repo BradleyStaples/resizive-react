@@ -6,7 +6,7 @@ import { Link } from 'gatsby';
 import fetchLocalStorageValues from '../components/get-config-values';
 import { phoneList, tabletList } from './device-sizes';
 
-const ControlPanel = ({ width, height, updateDimensions, reloadIframe, animiateIframe }) => {
+const ControlPanel = ({ width, height, isAnimating, updateDimensions, reloadIframe, startAnimation, stopAnimation }) => {
 
   const initialValues = useRef();
   initialValues.current = fetchLocalStorageValues();
@@ -16,30 +16,10 @@ const ControlPanel = ({ width, height, updateDimensions, reloadIframe, animiateI
     initialValues.current = fetchLocalStorageValues();
   });
 
-  const animationTimerRef = useRef();
-
   const [widthError, setWidthError] = useState(false);
   const [heightError, setHeightError] = useState(false);
   const [shonePhoneList, setShowPhoneList] = useState(false);
   const [shoneTabletList, setShowTabletList] = useState(false);
-  const [animation, setAnimation] = useState(false);
-
-  useEffect(() => {
-    if (animation && !animationTimerRef.current) {
-      animationTimerRef.current = animiateIframe();
-    }
-  }, [animation, animiateIframe]);
-
-  const onStart = (event) => {
-    setAnimation(true);
-  };
-
-  const onStop = (event) => {
-    setAnimation(false);
-    // abuse of a ref to store timer
-    clearInterval(animationTimerRef.current);
-    animationTimerRef.current = null;
-  };
 
   const decrementWidth = (event) => {
     let widthDelta = initialValues.current['stepIncrement'] * -1;
@@ -175,9 +155,10 @@ const ControlPanel = ({ width, height, updateDimensions, reloadIframe, animiateI
 
   return (
     <div>
+      <Link className='btn fontLarge leftSpace' to='/config' title='Set Config Data'>&#9881;</Link>
       <div className='buttonRow leftSpace'>
-        <button className='btn' onClick={onStart} disabled={animation}>Start</button>
-        <button className='btn leftSpace' onClick={onStop} disabled={!animation}>Pause</button>
+        <button className='btn' onClick={startAnimation} disabled={isAnimating}>Start</button>
+        <button className='btn leftSpace' onClick={stopAnimation} disabled={!isAnimating}>Stop</button>
         <button className='btn leftSpace' onClick={decrementWidth}>
           <span>&larr;</span>
         </button>
@@ -239,8 +220,6 @@ const ControlPanel = ({ width, height, updateDimensions, reloadIframe, animiateI
           })
         }
       </ul>
-
-      <Link className='btn fontLarge leftSpace' to='/config' title='Set Config Data'>&#9881;</Link>
     </div>
   )
 };

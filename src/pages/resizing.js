@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useReducer } from 'react';
 import classnames from 'classnames';
 import { Resizable } from 're-resizable';
-// import debounce from 'lodash.debounce';
 
 import Meta from '../components/meta';
 import Header from '../components/header';
@@ -14,48 +13,59 @@ import '../styles/resizive.scss';
 const ResizingPage = () => {
   const iframeRef = useRef();
   const resizableRef = useRef();
+  const animationTimerRef = useRef();
 
   const animationDirectionRef = useRef();
-  animationDirectionRef.current = 1;
+  if (!animationDirectionRef.current) {
+    animationDirectionRef.current = 1;
+  }
 
   const initialValues = useRef();
   initialValues.current = fetchLocalStorageValues();
 
   const [iframeKey, setIframeKey] = useState(0);
-  const [iframeLoaded, setIframeLoaded] = useState(false);
 
   let [windowWidth] = useWindowSize();
 
   function iframeReducer(state, action) {
     switch (action.type) {
-      case 'update':
+      case 'loaded':
+        return Object.assign({}, state, { isLoaded: true });
+      case 'updateDimensions':
         return Object.assign({}, state, {
           width: state.width + action.widthDelta,
           height: state.height + action.heightDelta,
-          resize: action.resize
+          isResizing: action.isResizing
         });
-      case 'stop':
-        return Object.assign({}, state, { resize: false });
+      case 'stopResizing':
+        return Object.assign({}, state, { isResizing: false });
+      case 'startAnimating':
+        return Object.assign({}, state, { isAnimating: true });
+      case 'stopAnimating':
+        return Object.assign({}, state, { isAnimating: false });
       default:
-        throw new Error();
+        throw new Error('invalid iframe reducer action type');
     }
   };
-  const [iframeState, iframeDispatch] = useReducer(iframeReducer, {
+  const iframeInitialState = {
+    isLoaded: false,
     width: 0,
     height: 0,
-    resize: false
-  });
+    isResizing: false,
+    isAnimating: false
+  };
+  const [iframeState, iframeDispatch] = useReducer(iframeReducer, iframeInitialState);
 
-  const updateDimensions = ({ widthDelta, heightDelta }, resize) => {
+  const updateDimensions = ({ widthDelta, heightDelta }, isResizing) => {
     // allow for only one delta to be passed in
     widthDelta = widthDelta || 0;
     heightDelta = heightDelta || 0;
 
     iframeDispatch({
-      type: 'update',
+      type: 'updateDimensions',
       widthDelta,
       heightDelta,
-      resize
+      isResizing
     });
   };
 
@@ -65,15 +75,15 @@ const ResizingPage = () => {
   });
 
   useEffect(() => {
-    if (iframeState.resize) {
-      console.log('resizing iframe to:', iframeState.width, iframeState.height);
+    if (iframeState.isResizing) {
       resizableRef.current.updateSize({
         width: iframeState.width,
         height: iframeState.height
       });
-      iframeDispatch({type: 'stop'});
+      iframeDispatch({type: 'stopResizing'});
     }
-  }, [iframeState.width, iframeState.height, iframeState.resize]);
+  }, [iframeState.width, iframeState.height, iframeState.isResizing]);
+
 
   useEffect(() => {
     updateDimensions({
@@ -81,7 +91,7 @@ const ResizingPage = () => {
       heightDelta: iframeRef.current.offsetHeight
     }, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [iframeLoaded]);
+  }, [iframeState.isLoaded]);
 
   const reloadIframe = () => {
     // hacky way to force react to reload iframe with same URL
@@ -89,62 +99,48 @@ const ResizingPage = () => {
   };
 
   const onIframeLoad = (event) => {
-    setIframeLoaded(true);
+    iframeDispatch({ type: 'loaded' });
   };
 
-  const animiateIframe = () => {
-    let floor = 320;
-    let delta = initialValues.current.animationIncrement;
-    let duration = initialValues.current.animationDuration;
+  useEffect(() => {
+    if (!iframeState.isAnimating) {
+      clearInterval(animationTimerRef.current);
+      animationTimerRef.current = null;
+    }
+  }, [iframeState.isAnimating]);
 
-    let timerId = setInterval(() => {
-      let newWidth = iframeState.width + (delta * animationDirectionRef.current);
-      let widthDelta;
+  let floor = 320;
+  let delta = initialValues.current.animationIncrement;
+  let duration = initialValues.current.animationDuration;
 
-      if (newWidth >= windowWidth && animationDirectionRef.current === 1) {
-        // change direction to be decremental
-        animationDirectionRef.current = -1;
-        widthDelta = delta * -1;
-      } else if (newWidth <= floor && animationDirectionRef.current === -1) {
-        // change direction to be incremental
-        animationDirectionRef.current = 1;
-        widthDelta = delta;
-      } else {
-        // maintain existing direction
-        widthDelta = delta * animationDirectionRef.current;
-      }
+  animationTimerRef.current = useInterval(() => {
+    let newWidth = iframeState.width + (delta * animationDirectionRef.current);
+    let widthDelta;
 
-      console.log('width', iframeState.width, 'widthDelta', widthDelta);
-      updateDimensions({
-        widthDelta
-      }, true);
-    }, duration);
+    if (newWidth >= windowWidth && animationDirectionRef.current === 1) {
+      // change direction to be decremental
+      animationDirectionRef.current = -1;
+      widthDelta = delta * -1;
+    } else if (newWidth <= floor && animationDirectionRef.current === -1) {
+      // change direction to be incremental
+      animationDirectionRef.current = 1;
+      widthDelta = delta;
+    } else {
+      // maintain existing direction
+      widthDelta = delta * animationDirectionRef.current;
+    };
 
+    updateDimensions({
+      widthDelta
+    }, true);
+  }, iframeState.isAnimating && iframeState.isLoaded ? duration : null);
 
-    // let timerId = useInterval(() => {
-    //   let newWidth = iframeState.width + (delta * animationDirectionRef.current);
-    //   let widthDelta;
+  const startAnimation = () => {
+    iframeDispatch({ type: 'startAnimating' });
+  };
 
-    //   if (newWidth >= windowWidth && animationDirectionRef.current === 1) {
-    //     // change direction to be decremental
-    //     animationDirectionRef.current = -1;
-    //     widthDelta = delta * -1;
-    //   } else if (newWidth <= floor && animationDirectionRef.current === -1) {
-    //     // change direction to be incremental
-    //     animationDirectionRef.current = 1;
-    //     widthDelta = delta;
-    //   } else {
-    //     // maintain existing direction
-    //     widthDelta = delta * animationDirectionRef.current;
-    //   }
-
-    //   console.log('width', iframeState.width, 'widthDelta', widthDelta);
-    //   updateDimensions({
-    //     widthDelta
-    //   }, true);
-    // }, duration);
-
-    return timerId;
+  const stopAnimation = () => {
+    iframeDispatch({ type: 'stopAnimating' });
   };
 
   const onResizeStop = (event, direction, refToElement, delta) => {
@@ -156,16 +152,16 @@ const ResizingPage = () => {
 
   const loadingClasses = classnames({
     loading: true,
-    hidden: iframeLoaded
+    hidden: iframeState.isLoaded
   });
 
   const frameClasses = classnames({
     resizer: true,
-    hidden: !iframeLoaded
+    hidden: !iframeState.isLoaded
   });
 
   const wrapperClass = classnames({
-    resizing: iframeLoaded
+    resizing: iframeState.isLoaded
   });
 
   const rulerClasses = classnames({
@@ -195,9 +191,11 @@ const ResizingPage = () => {
         <ControlPanel
           width={iframeState.width}
           height={iframeState.height}
+          isAnimating={iframeState.isAnimating}
           updateDimensions={updateDimensions}
           reloadIframe={reloadIframe}
-          animiateIframe={animiateIframe}
+          startAnimation={startAnimation}
+          stopAnimation={stopAnimation}
         />
       </Header>
       <div className={rulerClasses}>
@@ -209,7 +207,7 @@ const ResizingPage = () => {
             ref={resizableRef}
             className='frame'
             style={resizableStyles}
-            bounds='window'
+            bounds='parent'
             defaultSize={{
               height: '75vh',
               width: '75vw'
