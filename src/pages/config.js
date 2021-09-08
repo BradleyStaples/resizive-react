@@ -67,7 +67,9 @@ const ConfigPage = () => {
       </Header>
       <div className='page config'>
         <h2 className='center'>Resizive Config</h2>
-        <form method='post' action='#'>
+        <p className='center'>Config data is saved immediately upon change.</p>
+        <hr />
+        <form className='configForm' method='post' action='#'>
           <label>
             <span>Increment Size For Animation</span>
             {configSelector(
@@ -83,7 +85,7 @@ const ConfigPage = () => {
               'animationDuration',
               animationDuration,
               setAnimationDuration,
-              [{ v: 100, t: 'Smaller (100ms)' }, { v: 200, t: 'Normal (200ms)' }, { v: 300, t: 'Larger (300ms)' }]
+              [{ v: 100, t: 'Quicker (100ms)' }, { v: 200, t: 'Normal (200ms)' }, { v: 300, t: 'Slower (300ms)' }]
             )}
           </label>
           <label>

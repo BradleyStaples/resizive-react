@@ -12,17 +12,13 @@ const fetchLocalStorageValues = () => {
   Object.keys(localStorageDefaultValues).forEach((key) => {
     let defaultValue = localStorageDefaultValues[key];
     let localValue = localStorage.getItem(key);
-    // localstorage only stores strings, so coerce back to integers or booleans
+
+    // localstorage only stores strings, so coerce back default value
     if (localValue) {
-      if (localValue === 'true') {
-        localValue = true;
-      } else if (localValue === 'false') {
-        localValue = false;
-      } else {
-        // all values are currently used as booleans or integers; if not a boolean, convert to int
-        localValue = parseInt(localValue, 10);
-      }
+      localValue = JSON.parse(localValue);
     }
+
+    // `false` will break the || notation a couple of lines down, so handle it first
     if (localValue === false) {
       initialValues[key] = localValue;
     } else {
@@ -33,4 +29,4 @@ const fetchLocalStorageValues = () => {
   return initialValues;
 };
 
-module.exports = fetchLocalStorageValues;
+export default fetchLocalStorageValues;

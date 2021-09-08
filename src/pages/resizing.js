@@ -56,19 +56,6 @@ const ResizingPage = () => {
   };
   const [iframeState, iframeDispatch] = useReducer(iframeReducer, iframeInitialState);
 
-  const updateDimensions = ({ widthDelta, heightDelta }, isResizing) => {
-    // allow for only one delta to be passed in
-    widthDelta = widthDelta || 0;
-    heightDelta = heightDelta || 0;
-
-    iframeDispatch({
-      type: 'updateDimensions',
-      widthDelta,
-      heightDelta,
-      isResizing
-    });
-  };
-
   useEffect(() => {
     // abuse of a ref to make sure local storage values are gathered on each page render
     initialValues.current = fetchLocalStorageValues();
@@ -84,7 +71,6 @@ const ResizingPage = () => {
     }
   }, [iframeState.width, iframeState.height, iframeState.isResizing]);
 
-
   useEffect(() => {
     updateDimensions({
       widthDelta: iframeRef.current.offsetWidth,
@@ -92,15 +78,6 @@ const ResizingPage = () => {
     }, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [iframeState.isLoaded]);
-
-  const reloadIframe = () => {
-    // hacky way to force react to reload iframe with same URL
-    setIframeKey(iframeKey + 1);
-  };
-
-  const onIframeLoad = (event) => {
-    iframeDispatch({ type: 'loaded' });
-  };
 
   useEffect(() => {
     if (!iframeState.isAnimating) {
@@ -134,6 +111,28 @@ const ResizingPage = () => {
       widthDelta
     }, true);
   }, iframeState.isAnimating && iframeState.isLoaded ? duration : null);
+
+  const updateDimensions = ({ widthDelta, heightDelta }, isResizing) => {
+    // allow for only one delta to be passed in
+    widthDelta = widthDelta || 0;
+    heightDelta = heightDelta || 0;
+
+    iframeDispatch({
+      type: 'updateDimensions',
+      widthDelta,
+      heightDelta,
+      isResizing
+    });
+  };
+
+  const reloadIframe = () => {
+    // hacky way to force react to reload iframe with same URL
+    setIframeKey(iframeKey + 1);
+  };
+
+  const onIframeLoad = (event) => {
+    iframeDispatch({ type: 'loaded' });
+  };
 
   const startAnimation = () => {
     iframeDispatch({ type: 'startAnimating' });

@@ -2,13 +2,8 @@
 // --------  FOOTER  ----------
 // ----------------------------
 
-footer {
+.inlineFooter {
   max-width: 500px;
   margin: $font_default auto 0 auto;
-  text-align: center;
-}
-
-.inlineFooter {
-  border-top: 1px solid $green;
   padding-top: $font_default;
 }

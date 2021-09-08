@@ -92,6 +92,10 @@
   }
 }
 
+.dpad {
+  display: inline-block;
+}
+
 .stacked {
   display: inline-block;
   width: 38px;
@@ -102,6 +106,11 @@
   display: inline-block;
   width: 125px;
   vertical-align: middle;
+}
+
+.deviceLists {
+  position: relative;
+  display: inline; // inline needed over inline-block due to dropdown list widths
 }
 
 .btnPhones {
