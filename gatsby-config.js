@@ -13,6 +13,7 @@ module.exports = {
     },
     'gatsby-plugin-sass',
     'gatsby-plugin-gatsby-cloud',
-    'gatsby-plugin-react-helmet'
+    'gatsby-plugin-react-helmet',
+    'gatsby-plugin-use-query-params'
   ],
 };

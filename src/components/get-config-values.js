@@ -24,7 +24,7 @@ const fetchLocalStorageValues = () => {
         initialValues[key] = localValue || defaultValue;
       }
     } catch (error) {
-      console.log(`Error getting value for '${key}' \n ${error}`);
+      // console.log(`Error getting value for '${key}' \n ${error}`);
       initialValues[key] = defaultValue;
     }
   });

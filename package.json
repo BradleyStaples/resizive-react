@@ -21,12 +21,14 @@
     "gatsby-plugin-google-analytics": "^3.12.0",
     "gatsby-plugin-react-helmet": "^4.12.0",
     "gatsby-plugin-sass": "^4.12.0",
+    "gatsby-plugin-use-query-params": "^1.0.1",
     "re-resizable": "^6.9.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-helmet": "^6.1.0",
     "react-hotkeys-hook": "^3.4.0",
     "sass": "^1.38.0",
+    "use-query-params": "^1.2.3",
     "valid-url": "^1.0.9"
   }
 }

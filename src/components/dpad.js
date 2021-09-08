@@ -5,37 +5,37 @@ import fetchLocalStorageValues from './get-config-values';
 
 const Dpad = ({ width, height, updateDimensions }) => {
 
-  const initialValues = useRef();
-  initialValues.current = fetchLocalStorageValues();
+  const config = useRef();
+  config.current = fetchLocalStorageValues();
 
   useEffect(() => {
     // abuse of a ref to make sure local storage values are gathered on each page render
-    initialValues.current = fetchLocalStorageValues();
-  });
+    config.current = fetchLocalStorageValues();
+  }, []);
 
   const decrementWidth = (event) => {
-    let widthDelta = initialValues.current['stepIncrement'] * -1;
+    let widthDelta = config.current['stepIncrement'] * -1;
     updateDimensions({
       widthDelta
     }, true);
   };
 
   const incrementWidth = (event) => {
-    let widthDelta = initialValues.current['stepIncrement'];
+    let widthDelta = config.current['stepIncrement'];
     updateDimensions({
       widthDelta
     }, true);
   };
 
   const decrementHeight = (event) => {
-    let heightDelta = initialValues.current['stepIncrement'] * -1;
+    let heightDelta = config.current['stepIncrement'] * -1;
     updateDimensions({
       heightDelta
     }, true);
   };
 
   const incrementHeight = (event) => {
-    let heightDelta = initialValues.current['stepIncrement'];
+    let heightDelta = config.current['stepIncrement'];
     updateDimensions({
       heightDelta
     }, true);

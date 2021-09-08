@@ -1,41 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import Meta from '../components/meta';
 import Header from '../components/header';
 import EntryForm from '../components/entry-form';
 import Footer from '../components/footer';
+import useLocalStorage from '../components/use-local-storage';
 
 import fetchLocalStorageValues from '../components/get-config-values';
 import '../styles/resizive.scss';
 
 const ConfigPage = () => {
-  const initialValues = fetchLocalStorageValues();
-  const [animationIncrement, setAnimationIncrement] = useState(initialValues['animationIncrement']);
-  const [animationDuration, setAnimationDuration] = useState(initialValues['animationDuration']);
-  const [stepIncrement, setStepIncrement] = useState(initialValues['stepIncrement']);
-  const [useScrollbars, setUseScrollbars] = useState(initialValues['useScrollbars']);
-  const [useRulers, setUseRulers] = useState(initialValues['useRulers']);
+  const [loaded, setLoaded] = useState(false);
+  const config = useRef();
+  config.current = fetchLocalStorageValues();
+
+  const useLocalStorageWithDefault = (key)  => {
+    return useLocalStorage(key, config.current[key]);
+  };
+
+  const [animationIncrement, setAnimationIncrement] = useLocalStorageWithDefault('animationIncrement');
+  const [animationDuration, setAnimationDuration] = useLocalStorageWithDefault('animationDuration');
+  const [stepIncrement, setStepIncrement] = useLocalStorageWithDefault('stepIncrement');
+  const [useScrollbars, setUseScrollbars] = useLocalStorageWithDefault('useScrollbars');
+  const [useRulers, setUseRulers] = useLocalStorageWithDefault('useRulers');
 
   useEffect(() => {
-    localStorage.setItem('animationDuration', animationDuration);
-  }, [animationDuration]);
+    // abuse of a ref to make sure local storage values are gathered on each page render
+    config.current = fetchLocalStorageValues();
 
-  useEffect(() => {
-    localStorage.setItem('animationIncrement', animationIncrement);
-  }, [animationIncrement]);
-
-  useEffect(() => {
-    localStorage.setItem('stepIncrement', stepIncrement);
-  }, [stepIncrement]);
-
-  useEffect(() => {
-    localStorage.setItem('useScrollbars', useScrollbars);
-  }, [useScrollbars]);
-
-  useEffect(() => {
-    localStorage.setItem('useRulers', useRulers);
-  }, [useRulers]);
-
+    if (!loaded) {
+      setLoaded(true);
+      // values from localStorage won't be read on server-side render, so check all values
+      // and update checkboxes/selects to correct value once on client-side
+      setAnimationIncrement(config.current['animationIncrement']);
+      setAnimationDuration(config.current['animationDuration']);
+      setStepIncrement(config.current['stepIncrement']);
+      setUseScrollbars(config.current['useScrollbars']);
+      setUseRulers(config.current['useRulers']);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const configSelector = (name, selectedValue, stateFunc, values) => {
     return (

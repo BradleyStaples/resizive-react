@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect, useReducer } from 'react';
 import classnames from 'classnames';
 import { Resizable } from 're-resizable';
+import { useQueryParam, StringParam } from 'use-query-params';
+
 
 import Meta from '../components/meta';
 import Header from '../components/header';
@@ -20,12 +22,16 @@ const ResizingPage = () => {
     animationDirectionRef.current = 1;
   }
 
-  const initialValues = useRef();
-  initialValues.current = fetchLocalStorageValues();
+  const config = useRef();
+  config.current = fetchLocalStorageValues();
 
   const [iframeKey, setIframeKey] = useState(0);
+  const [useRulers, setUseRulers] = useState(false);
+  const [useScrollbars, setUseScrollbars] = useState(false);
 
   let [windowWidth] = useWindowSize();
+
+  const [url] = useQueryParam('url', StringParam);
 
   function iframeReducer(state, action) {
     switch (action.type) {
@@ -57,11 +63,6 @@ const ResizingPage = () => {
   const [iframeState, iframeDispatch] = useReducer(iframeReducer, iframeInitialState);
 
   useEffect(() => {
-    // abuse of a ref to make sure local storage values are gathered on each page render
-    initialValues.current = fetchLocalStorageValues();
-  });
-
-  useEffect(() => {
     if (iframeState.isResizing) {
       resizableRef.current.updateSize({
         width: iframeState.width,
@@ -87,8 +88,8 @@ const ResizingPage = () => {
   }, [iframeState.isAnimating]);
 
   let floor = 320;
-  let delta = initialValues.current.animationIncrement;
-  let duration = initialValues.current.animationDuration;
+  let delta = parseInt(config.current.animationIncrement, 10);
+  let duration = parseInt(config.current.animationDuration, 10);
 
   animationTimerRef.current = useInterval(() => {
     let newWidth = iframeState.width + (delta * animationDirectionRef.current);
@@ -111,6 +112,22 @@ const ResizingPage = () => {
       widthDelta
     }, true);
   }, iframeState.isAnimating && iframeState.isLoaded ? duration : null);
+
+  useEffect(() => {
+    // abuse of a ref to make sure local storage values are gathered on each page render
+    config.current = fetchLocalStorageValues();
+
+    // set iframe src on render since it's src won't be populated via server side rendering
+    // as it dpends on the query string param
+    if (iframeRef.current && !iframeRef.current.src) {
+      setUseScrollbars(config.current.useScrollbars);
+      iframeRef.current.src = url;
+    }
+
+    // set rulers based on config values; not read on server-side render, so do once on page render
+    setUseRulers(config.current.useRulers);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const updateDimensions = ({ widthDelta, heightDelta }, isResizing) => {
     // allow for only one delta to be passed in
@@ -165,32 +182,17 @@ const ResizingPage = () => {
 
   const rulerClasses = classnames({
     rulers: true,
-    showRulers: initialValues.current.useRulers
+    showRulers: useRulers
   });
 
-  const windowGlobal = typeof window !== 'undefined' && window;
-  let title;
-  let url;
-  try {
-    const search = windowGlobal.location.search;
-    const params = new URLSearchParams(search);
-    url = params.get('url');
-    title = url ? `Resizive: ${url}` : 'Resizive';
-  } catch (e) {
-    title = 'Resizive';
-    url = '';
-    console.log('Error getting url from query param');
-  }
+  const title = url ? `Resizive: ${url}` : 'Resizive';
 
-  let transitionDuration = initialValues.current.animationDuration / 1000; // animationDuration is an integer of milliseconds
+  let transitionDuration = config.current.animationDuration / 1000; // animationDuration is an integer of milliseconds
   let resizableStyles = {
     transition: `height ${transitionDuration}s, width ${transitionDuration}s`
   };
 
-  let scrolling = 'no';
-  if (initialValues.current.useScrollbars) {
-    scrolling = 'yes';
-  }
+  let scrolling = useScrollbars ? 'yes' : 'no';
 
   return (
     <div className={wrapperClass}>
